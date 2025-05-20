@@ -1,0 +1,210 @@
+
+
+<div class="header-row">
+  <div class="left-block">
+  <h2>
+    Latest Orders <span class="row-count">{{ users.length }} total</span>
+  </h2>
+</div>
+
+  <div class="right-block">
+    <input
+      type="file"
+      id="fileInput"
+      style="display: none"
+      (change)="onFileSelected($event)"
+      accept=".json"
+    />
+    <button class="btn" (click)="openFileDialog()" [disabled]="isLoading">
+      NEW ENTRY
+    </button>
+  </div>
+</div>
+
+
+<div class="loading-overlay" *ngIf="isLoading">
+  <div class="spinner"></div>
+  <p>Loading data...</p>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th (click)="sortBy('id')" [class.sorted]="sortColumn === 'id'">
+        Order ID
+        <span
+          *ngIf="sortColumn === 'id'"
+          [class.asc]="sortDirection === 'asc'"
+          >{{ sortDirection === "asc" ? "↑" : "↓" }}</span
+        >
+      </th>
+      <th
+        (click)="sortBy('first_name')"
+        [class.sorted]="sortColumn === 'first_name'"
+      >
+        First Name
+        <span
+          *ngIf="sortColumn === 'first_name'"
+          [class.asc]="sortDirection === 'asc'"
+          >{{ sortDirection === "asc" ? "↑" : "↓" }}</span
+        >
+      </th>
+      <th
+        (click)="sortBy('last_name')"
+        [class.sorted]="sortColumn === 'last_name'"
+      >
+        Last Name
+        <span
+          *ngIf="sortColumn === 'last_name'"
+          [class.asc]="sortDirection === 'asc'"
+          >{{ sortDirection === "asc" ? "↑" : "↓" }}</span
+        >
+      </th>
+      <th (click)="sortBy('email')" [class.sorted]="sortColumn === 'email'">
+        Email
+        <span
+          *ngIf="sortColumn === 'email'"
+          [class.asc]="sortDirection === 'asc'"
+          >{{ sortDirection === "asc" ? "↑" : "↓" }}</span
+        >
+      </th>
+      <th (click)="sortBy('address')" [class.sorted]="sortColumn === 'address'">
+        Address
+        <span
+          *ngIf="sortColumn === 'address'"
+          [class.asc]="sortDirection === 'asc'"
+          >{{ sortDirection === "asc" ? "↑" : "↓" }}</span
+        >
+      </th>
+      <th (click)="sortBy('status')" [class.sorted]="sortColumn === 'status'">
+        Status
+        <span
+          *ngIf="sortColumn === 'status'"
+          [class.asc]="sortDirection === 'asc'"
+          >{{ sortDirection === "asc" ? "↑" : "↓" }}</span
+        >
+      </th>
+      <th (click)="sortBy('data')" [class.sorted]="sortColumn === 'data'">
+        Date
+        <span
+          *ngIf="sortColumn === 'data'"
+          [class.asc]="sortDirection === 'asc'"
+          >{{ sortDirection === "asc" ? "↑" : "↓" }}</span
+        >
+      </th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+
+
+  <tbody>
+    <tr *ngFor="let user of displayedUsers">
+      <td>{{ user.id }}</td>
+      <td>{{ user.first_name }}</td>
+      <td>{{ user.last_name }}</td>
+      <td>{{ user.email }}</td>
+      <td>{{ user.address }}</td>
+      <td>{{ user.status }}</td> 
+      <td>{{ user.data }}</td>
+      <td>
+  <button
+    class="icon-btn"
+    (click)="editUser(user)"
+    [disabled]="isLoading"
+    title="Edit"
+  >
+    <span class="dots">⋮</span>
+    <svg
+      class="minimal-pencil"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      width="16"
+      height="16"
+    >
+      <path
+        d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      />
+      <path
+        d="M14.06 4.94l3.75 3.75"
+        stroke="currentColor"
+        stroke-width="2"
+      />
+    </svg>
+  </button>
+</td>
+    </tr>
+  </tbody>
+
+
+
+
+</table>
+
+<div class="modal" *ngIf="editingUser" (click)="cancelEdit()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+  <h3>Edit User</h3>
+  
+
+  <div class="form-grid">
+    <div class="form-group">
+      <label for="first_name">First_name</label>
+      <input id="first_name" [(ngModel)]="editedUser!.first_name" type="text" />
+    </div>
+    <div class="form-group">
+      <label for="last_name">Last_name</label>
+      <input id="last_name" [(ngModel)]="editedUser!.last_name" type="text" />
+    </div>
+    
+
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input id="email" [(ngModel)]="editedUser!.email" type="email" />
+    </div>
+    <div class="form-group">
+      <label for="address">Address</label>
+      <input id="address" [(ngModel)]="editedUser!.address" type="text" />
+    </div>
+
+    <div class="form-group">
+      <label for="status">Status</label>
+      <input id="status" [(ngModel)]="editedUser!.status" type="text" />
+    </div>
+    <div class="form-group">
+      <label for="data">Date</label>
+      <input id="data" [(ngModel)]="editedUser!.data" type="text" />
+    </div>
+  </div>
+  
+  <div class="form-actions">
+    <button (click)="saveUser()">Save Settings</button>
+  </div>
+</div>
+
+</div>
+
+  
+<div class="pagination-container">
+  <label>
+    Rows per page:
+    <select [(ngModel)]="itemsPerPage" (change)="onItemsPerPageChange()">
+      <option *ngFor="let option of itemsPerPageOptions" [value]="option">{{ option }}</option>
+    </select>
+  </label>
+
+  <span>
+    {{ startItemIndex + 1 }} - {{ endItemIndex }} of {{ users.length }}
+  </span>
+
+  <button (click)="prevPage()" [disabled]="currentPage === 1">❮</button>
+  <button (click)="nextPage()" [disabled]="currentPage === totalPages">❯</button>
+</div>
+
+
+
+
+
+
+
