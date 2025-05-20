@@ -1,0 +1,63 @@
+stages:
+  - build
+  - test
+  - deploy
+
+build-job:
+  stage: build
+  image: node:18
+  tags:
+    - docker
+    - windows
+  script:
+    - echo "Installing dependencies..."
+    - npm install
+    - echo "Building the application..."
+    - npm run build --prod
+  artifacts:
+    paths:
+      - dist/
+
+unit-test-job:
+  stage: test
+  image: node:18
+  tags:
+    - docker
+    - windows
+  script:
+    - echo "Running unit tests..."
+    - npm test
+  allow_failure: false
+
+lint-test-job:
+  stage: test
+  image: node:18
+  tags:
+    - docker
+    - windows
+  script:
+    - echo "Linting code..."
+    - npm run lint
+  allow_failure: true
+
+deploy-job:
+  stage: deploy
+  image: docker:20-dind
+  services:
+    - docker:dind
+  tags:
+    - docker
+    - windows
+  variables:
+    DOCKER_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+    DOCKER_REGISTRY: $CI_REGISTRY
+  script:
+    - echo "Logging into Docker registry..."
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $DOCKER_REGISTRY --password-stdin
+    - echo "Building Docker image..."
+    - docker build -t $DOCKER_IMAGE .
+    - echo "Pushing Docker image..."
+    - docker push $DOCKER_IMAGE
+  environment: production
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
